@@ -1,0 +1,60 @@
+<!--
+  Note: This file must be kept in the public folder to avoid webpack compilation
+  Why: When GitLab Pages encounters an error, it serves
+  ${process.env.BASE_URL}/404.html.
+  For user GitHub Pages (i.e. user.github.io), ${process.env.BASE_URL} is the empty string.
+
+  If 404.html is included in src/, webpack will include it in the app bundle
+  (${process.env.BASE_URL}/js/app.HASH.js), so ${process.env.BASE_URL}/404.html
+  will not exist.
+-->
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>pogo-raid-map-presentation</title>
+    <meta name="robots" content="index,follow">
+    <script>
+      // ========================================
+      // Credits:
+      // - https://stackoverflow.com/a/50259501
+      // - https://stackoverflow.com/a/50247140
+      // ========================================
+
+      // since the app is hosted with 2 different URL structures, the 404 error handling
+      // is different for each host
+      switch (location.host) {
+        // Assuming the URL of the app is https://michael-mml.gitlab.io/pogo-raid-map-presentation/nearby?title=...
+        case 'michael-mml.gitlab.io':
+          // remove ${process.env.CI_PROJECT_NAME} from the route
+          const url = location.pathname // i.e. /pogo-raid-map-presentation/nearby?title=...
+            .slice(1) // remove leading / i.e. pogo-raid-map-presentation/nearby?title=...
+            .split('/')
+            // remove publicPath i.e. ${process.env.CI_PROJECT_NAME} = pogo-raid-map-presentation
+            .slice(1)
+            .join('/') // add / between slugs to re-create URL
+
+          // save the route
+          sessionStorage.redirect = `/${url}`;
+
+          // redirect to the homepage i.e. https://michael-mml.github.io/${process.env.CI_PROJECT_NAME}, which will trigger the sessionStorage redirect
+          location.replace(
+            location.pathname
+              .split('/')
+              // extract publicPath i.e. ${process.env.CI_PROJECT_NAME} = pogo-raid-map-presentation
+              .slice(0, 2)
+              .join('/') // add leading /
+          );
+          break;
+        // Assuming the URL of the app is https://michael-mml.github.io/nearby?title=...
+        case 'michael-mml.github.io':
+        default:
+          // save the route
+          sessionStorage.redirect = `${location.pathname}`;
+
+          // redirect to the homepage i.e. https://michael-mml.github.io/, which will trigger the sessionStorage redirect
+          location.replace('/'); // NOTE: empty string causes infinite redirects
+          break;
+      }
+    </script>
+  </head>
+</html>
